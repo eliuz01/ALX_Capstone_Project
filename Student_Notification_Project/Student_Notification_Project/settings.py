@@ -11,10 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-import os
 
-# Path to Anaconda GDAL binaries
-GDAL_LIBRARY_PATH = r'C:\Users\Administrator\Anaconda3\Library\bin\gdal.dll'
 
 
 
@@ -47,7 +44,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'notification_app',
     'rest_framework',
-    'django.contrib.gis',
     'phonenumber_field',
 ]
 
@@ -87,12 +83,8 @@ WSGI_APPLICATION = 'Student_Notification_Project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'student_notifications',  # Name of your PostgreSQL database
-        'USER': 'postgres',  # Username, e.g., 'postgres'
-        'PASSWORD': 'E#koyi@2025',  # Password for the username
-        'HOST': 'localhost',  # Host for your database (use 'localhost' for local development)
-        'PORT': '5432',  # Port for PostgreSQL (default is 5432)
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
