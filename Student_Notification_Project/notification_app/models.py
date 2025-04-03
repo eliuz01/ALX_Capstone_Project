@@ -3,32 +3,34 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 import math
-
-
-
-
 from .managers import CustomUserManager
+
 
 
 # Create your models here.
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     student_id = models.IntegerField(unique=True, primary_key=True)
-    email = models.EmailField(max_length=254)
-    phone_number = PhoneNumberField()
-    student_pickup_latitude = models.FloatField()
-    student_pickup_longitude = models.FloatField()
-    student_dropoff_latitude = models.FloatField()
-    student_dropoff_longitude = models.FloatField()
+    email = models.EmailField(unique=True, max_length=254)
+    phone_number = PhoneNumberField(unique=True)
+    student_pickup_latitude = models.FloatField(null=True, blank=True)
+    student_pickup_longitude = models.FloatField(null=True, blank=True)
+    student_dropoff_latitude = models.FloatField(null=True, blank=True)
+    student_dropoff_longitude = models.FloatField(null=True, blank=True)
     parent_name = models.CharField(max_length=100)
 
+    #required fields for user management
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
 
-    USERNAME_FIELD = "student_id"
-    REQUIRED_FIELDS = ['email']
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
 
     objects = CustomUserManager()
     
     def __str__(self):
-        return f"{self.student_id} - {self.email}"
+        return f"{self.student_id} - {self.email}"  
 
 
 class Bus(models.Model):
@@ -78,7 +80,7 @@ class Notification(models.Model):
     notification_message = models.TextField()
 
     def __str__(self):
-        return f"Notification for Bus {self.bus_id.bus_id} at {self.notification_time}"
+        return f"Notification for student{self.student_id.student_id} in {self.bus_id.bus_id} at {self.notification_time}"
 
     def calculate_distance_to_pickup(self):
         student = self.student_id         

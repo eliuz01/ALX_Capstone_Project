@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'notification_app',
     'rest_framework',
     'phonenumber_field',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
