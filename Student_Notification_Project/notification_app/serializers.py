@@ -8,8 +8,22 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['student_id', 'phone_number', 'email', 'password', 'student_pickup_latitude', 'student_pickup_longitude', 
-                  'student_dropoff_latitude', 'student_dropoff_longitude']
+                  'student_dropoff_latitude', 'student_dropoff_longitude', 'parent_name']
         extra_kwargs = {'password': {'write_only': True}}
+    
+    def validate(self, data):        
+        if (data['student_pickup_latitude'] > 90 or data['student_pickup_latitude'] < -90) or \
+        (data['student_dropoff_latitude'] > 90 or data['student_dropoff_latitude'] < -90):
+            raise ValidationError("Latitude must be between -90 and 90")
+
+        if (data['student_pickup_longitude'] > 180 or data['student_pickup_longitude'] < -180) or \
+        (data['student_dropoff_longitude'] > 180 or data['student_dropoff_longitude'] < -180):
+            raise ValidationError("Longitude must be between -180 and 180")
+        if not data['parent_name'] or len(data['parent_name']) < 3:
+            raise ValidationError("Parent name must be at least 3 characters long")
+    
+        return data
+    
     def create(self, validated_data):
         user = CustomUser(
             student_id=validated_data['student_id'],
@@ -21,7 +35,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             student_dropoff_latitude=validated_data.get('student_dropoff_latitude'),
             student_dropoff_longitude=validated_data.get('student_dropoff_longitude'),
         )
-        user.set_password(validated_data['password'])  # Hash the password
+        user.set_password(validated_data['password'])  
         user.save()
         return user
 
