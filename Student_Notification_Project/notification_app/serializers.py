@@ -7,14 +7,19 @@ from django.contrib.auth import authenticate, get_user_model
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['student_id', 'phone_number', 'email', 'password']
+        fields = ['student_id', 'phone_number', 'email', 'password', 'student_pickup_latitude', 'student_pickup_longitude', 
+                  'student_dropoff_latitude', 'student_dropoff_longitude']
         extra_kwargs = {'password': {'write_only': True}}
     def create(self, validated_data):
         user = CustomUser(
             student_id=validated_data['student_id'],
             email=validated_data['email'],
             phone_number=validated_data['phone_number'],
-            parent_name=validated_data['parent_name']
+            parent_name=validated_data['parent_name'],
+            student_pickup_latitude=validated_data.get('student_pickup_latitude'),
+            student_pickup_longitude=validated_data.get('student_pickup_longitude'),
+            student_dropoff_latitude=validated_data.get('student_dropoff_latitude'),
+            student_dropoff_longitude=validated_data.get('student_dropoff_longitude'),
         )
         user.set_password(validated_data['password'])  # Hash the password
         user.save()
@@ -54,7 +59,32 @@ class CustomUserSerializer(serializers.ModelSerializer):
             raise ValidationError("Parent name must be at least 3 characters long")
     
         return data
-    
+#userprofile
+class ProfileUserSerializer(serializers.ModelSerializer):
+    phone_number = PhoneNumberField()  # Ensure this is formatted correctly
+
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'phone_number', 'parent_name', 
+                  'student_pickup_latitude', 'student_pickup_longitude', 
+                  'student_dropoff_latitude', 'student_dropoff_longitude']
+        read_only_fields = ['student_id']  # Prevent modification of student_id
+        
+    def update(self, instance, validated_data):
+        # Update user profile (non-sensitive fields)
+        instance.email = validated_data.get('email', instance.email)
+        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+        instance.parent_name = validated_data.get('parent_name', instance.parent_name)
+        
+        # Optional fields (locations)
+        instance.student_pickup_latitude = validated_data.get('student_pickup_latitude', instance.student_pickup_latitude)
+        instance.student_pickup_longitude = validated_data.get('student_pickup_longitude', instance.student_pickup_longitude)
+        instance.student_dropoff_latitude = validated_data.get('student_dropoff_latitude', instance.student_dropoff_latitude)
+        instance.student_dropoff_longitude = validated_data.get('student_dropoff_longitude', instance.student_dropoff_longitude)
+
+        instance.save()
+        return instance
+
 # Bus Serializer
 class BusSerializer(serializers.ModelSerializer):
     drivers = serializers.StringRelatedField(many=True)  # Serialize driver names
