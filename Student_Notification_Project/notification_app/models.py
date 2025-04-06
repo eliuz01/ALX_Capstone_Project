@@ -71,13 +71,13 @@ class BusAttendanceLog(models.Model):
         return f"Log for Smartcard {self.smartcard_id.smartcard_id} on Bus {self.bus_id.bus_id}"
 
 class Notification(models.Model):
-    notification_id = models.IntegerField(primary_key=True)
+    notification_id = models.AutoField(primary_key=True)
     bus_id = models.ForeignKey(Bus, on_delete=models.CASCADE)
     notification_time = models.TimeField(auto_now=True)
     bus_location_latitude = models.FloatField()
     bus_location_longitude = models.FloatField()
     student_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    notification_message = models.TextField()
+    notification_message = models.TextField(null=True, blank=True, default="Default notification message.")
 
     def calculate_distance(self, is_pickup=True):
         """Calculates distance between the bus's current location and the student's location."""

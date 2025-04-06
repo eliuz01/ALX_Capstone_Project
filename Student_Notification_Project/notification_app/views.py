@@ -67,7 +67,7 @@ class SmartcardRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIVie
     serializer_class = SmartcardSerializer
     permission_classes = [IsAdminUser]
 
-class SmartcardCreateAPIView(generics.CreateApiView):
+class SmartcardCreateAPIView(generics.CreateAPIView):
     queryset = Smartcard.objects.all()
     serializer_class = SmartcardSerializer
     permission_classes = [IsAdminUser]

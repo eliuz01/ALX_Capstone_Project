@@ -130,8 +130,9 @@ class BusAttendanceLogSerializer(serializers.ModelSerializer):
         fields = ['scan_log_id', 'smartcard_id', 'bus_id', 'boarding_timestamp', 'alighting_timestamp']
 
 class NotificationSerializer(serializers.ModelSerializer):
-    student_id = CustomUserSerializer(read_only=True)  
-    bus_id = BusSerializer(read_only=True)  
+    student_id = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())  
+    bus_id = serializers.PrimaryKeyRelatedField(queryset=Bus.objects.all())  
+
     class Meta:
         model = Notification
         fields = ['notification_id', 'bus_id', 'notification_time', 'bus_location_latitude', 'bus_location_longitude', 'student_id', 'notification_message']
