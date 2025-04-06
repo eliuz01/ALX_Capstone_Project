@@ -1,6 +1,7 @@
 from django.shortcuts import render
-from .models import CustomUser, Bus
-from .serializers import CustomUserSerializer, RegisterSerializer, LoginSerializer, ProfileUserSerializer, BusSerializer
+from .models import CustomUser, Bus,Smartcard, Driver
+from .serializers import CustomUserSerializer, RegisterSerializer, LoginSerializer, ProfileUserSerializer, \
+BusSerializer, SmartcardSerializer, DriverSerializer
 from rest_framework.response import Response
 from rest_framework import status,generics
 from rest_framework.authtoken.models import Token
@@ -51,29 +52,40 @@ class ProfileUserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
 class BusListCreateAPIView(generics.ListCreateAPIView):
     queryset = Bus.objects.all() 
     serializer_class = BusSerializer 
-    permission_class = [IsAdminUser]
+    permission_class = [IsAuthenticated]
     
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
     
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
-
-
 # View to retrieve, update, or delete a bus by ID
 class BusRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Bus.objects.all()  
     serializer_class = BusSerializer  
     permission_class = [IsAdminUser]
 
-    def get(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
+# View to retrieve, update, or delete a smartcard by ID  
+class SmartcardRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Smartcard.objects.all()
+    serializer_class = SmartcardSerializer
+    permission_classes = [IsAdminUser]
 
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+class SmartcardCreateAPIView(generics.CreateApiView):
+    queryset = Smartcard.objects.all()
+    serializer_class = SmartcardSerializer
+    permission_classes = [IsAdminUser]
 
-    def delete(self, request, *args, **kwargs):
-        return self.destroy(request, *args, **kwargs)
+class DriverCreateAPIView(generics.CreateAPIView):
+    queryset = Driver.objects.all()
+    serializer_class = DriverSerializer
+    permission_classes = [IsAdminUser]
+
+class DriverRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Driver.objects.all()
+    serializer_class = DriverSerializer
+    permission_classes = [IsAdminUser]
+
+
+    
+
+
 
    
        
