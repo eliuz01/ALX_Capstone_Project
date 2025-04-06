@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .models import CustomUser
-from .serializers import CustomUserSerializer, RegisterSerializer, LoginSerializer, ProfileUserSerializer
+from .models import CustomUser, Bus
+from .serializers import CustomUserSerializer, RegisterSerializer, LoginSerializer, ProfileUserSerializer, BusSerializer
 from rest_framework.response import Response
 from rest_framework import status,generics
 from rest_framework.authtoken.models import Token
@@ -15,7 +15,6 @@ class LoginView(generics.GenericAPIView):
     http_method_names = ['post']
 
     def post(self, request, *args, **kwargs):
-        # Validate login credentials using the serializer, raise exception if invalid
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
@@ -26,8 +25,9 @@ class LoginView(generics.GenericAPIView):
 
 #list all users in database
 class CustomUserListView(generics.ListAPIView):
-    queryset = CustomUser.objects.all()  # Get all users from the database
+    queryset = CustomUser.objects.all()  
     serializer_class = CustomUserSerializer
+    permission_classes  = [IsAdminUser]
 
   
 # View to retrieve, update, or delete a specific user by id
@@ -39,13 +39,42 @@ class CustomUserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView)
    
 #users can view and update their profiles
 class ProfileUserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
-    queryset = CustomUser.objects.all()  # Get all users from the database
+    queryset = CustomUser.objects.all()  
     serializer_class = ProfileUserSerializer
-    permission_classes = [IsAuthenticated]  # Ensure that only authenticated users can access this view
+    permission_classes = [IsAuthenticated]  
 
     def get_object(self):
-        # Return the currently authenticated user’s profile
-        return self.request.user  # This ensures users can only access their own profile
+        return self.request.user 
+
+
+# View to list all buses or create a new bus
+class BusListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Bus.objects.all() 
+    serializer_class = BusSerializer 
+    permission_class = [IsAdminUser]
+    
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+    
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+
+# View to retrieve, update, or delete a bus by ID
+class BusRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Bus.objects.all()  
+    serializer_class = BusSerializer  
+    permission_class = [IsAdminUser]
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
    
        
 
