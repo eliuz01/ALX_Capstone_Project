@@ -139,3 +139,13 @@ class NotificationSerializer(serializers.ModelSerializer):
     def update_notification_message(self, instance):
         instance.update_notification_message()
         return instance
+    
+    def create(self, validated_data):
+        instance = super().create(validated_data)
+        instance.update_notification_message()  # Update the message
+        return instance
+
+    def update(self, instance, validated_data):
+        instance = super().update(instance, validated_data)
+        instance.update_notification_message()  # Update the message
+        return instance

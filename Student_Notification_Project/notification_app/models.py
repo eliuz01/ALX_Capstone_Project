@@ -79,55 +79,70 @@ class Notification(models.Model):
     student_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     notification_message = models.TextField()
 
-    def __str__(self):
-        return f"Notification for student{self.student_id.student_id} in {self.bus_id.bus_id} at {self.notification_time}"
-
-    def calculate_distance_to_pickup(self):
-        student = self.student_id         
-        pickup_lat = student.student_pickup_latitude
-        pickup_lon = student.student_pickup_longitude        
-        
-        bus_lat = self.bus_location_latitude
-        bus_lon = self.bus_location_longitude
-        
-        # Haversine formula to calculate the distance
-        return self._calculate_haversine_distance(bus_lat, bus_lon, pickup_lat, pickup_lon)
-
-    def calculate_distance_to_dropoff(self):        
-        student = self.student_id  
-        dropoff_lat = student.student_dropoff_latitude  
-        dropoff_lon = student.student_dropoff_longitude  
-        
-        bus_lat = self.bus_location_latitude
-        bus_lon = self.bus_location_longitude
-        
-        # Haversine formula to calculate the distance
-        return self._calculate_haversine_distance(bus_lat, bus_lon, dropoff_lat, dropoff_lon)
-
-    def _calculate_haversine_distance(self, lat1, lon1, lat2, lon2):
+    def calculate_distance(self, is_pickup=True):
+        """Calculates distance between the bus's current location and the student's location."""
         R = 6371  # Earth radius in kilometers
-        lat1 = math.radians(lat1)
-        lon1 = math.radians(lon1)
-        lat2 = math.radians(lat2)
-        lon2 = math.radians(lon2)
-        
+        lat1 = math.radians(self.bus_location_latitude)  # Bus's current latitude
+        lon1 = math.radians(self.bus_location_longitude)  # Bus's current longitude
+
+        if is_pickup:
+            lat2 = math.radians(self.student_id.student_pickup_latitude)
+            lon2 = math.radians(self.student_id.student_pickup_longitude)
+        else:
+            lat2 = math.radians(self.student_id.student_dropoff_latitude)
+            lon2 = math.radians(self.student_id.student_dropoff_longitude)
+
         dlat = lat2 - lat1
         dlon = lon2 - lon1
-        
+
         a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-        
+
         distance = R * c  # Distance in kilometers
         return distance
-    
+
+    def calculate_time_to_pickup(self):
+        """Calculates the time it will take the bus to reach the pickup location based on speed."""
+        distance = self.calculate_distance(is_pickup=True)  # Distance to pickup location
+        
+        bus_speed = self.bus_id.bus_speed  # Get bus speed from the Bus model
+        
+        # Time = Distance / Speed, converted to minutes
+        time_to_pickup = (distance / bus_speed) * 60  # Time in minutes
+        return time_to_pickup
+
+    def calculate_time_to_dropoff(self):
+        """Calculates the time it will take the bus to reach the dropoff location based on speed."""
+        distance = self.calculate_distance(is_pickup=False)  # Distance to dropoff location
+        
+        bus_speed = self.bus_id.bus_speed  # Get bus speed from the Bus model
+        
+        # Time = Distance / Speed, converted to minutes
+        time_to_dropoff = (distance / bus_speed) * 60  # Time in minutes
+        return time_to_dropoff
+
     def update_notification_message(self):
-        pickup_distance = self.calculate_distance_to_pickup()
+        """Updates the notification message with the calculated times."""
+        time_to_pickup = self.calculate_time_to_pickup()
+        time_to_dropoff = self.calculate_time_to_dropoff()
         
-        dropoff_distance = self.calculate_distance_to_dropoff()
-        
-        self.notification_message = (
-            f"Bus {self.bus_id.bus_id} is approaching. "
-            f"Distance to pickup location: {pickup_distance:.2f} km. "
-            f"Distance to dropoff location: {dropoff_distance:.2f} km."
-        )
-        self.save()
+        # Send notification only if within 5 minutes of pickup/dropoff
+        if time_to_pickup <= 5:  # within 5 minutes to pickup
+            self.notification_message = (
+                f"Bus {self.bus_id.bus_id} is approaching your pickup location. "
+                f"Distance: {self.calculate_distance(is_pickup=True):.2f} km. "
+                f"Time to pickup: {time_to_pickup:.2f} minutes."
+            )
+        elif time_to_dropoff <= 5:  # within 5 minutes to dropoff
+            self.notification_message = (
+                f"Bus {self.bus_id.bus_id} is approaching your dropoff location. "
+                f"Distance: {self.calculate_distance(is_pickup=False):.2f} km. "
+                f"Time to dropoff: {time_to_dropoff:.2f} minutes."
+            )
+        else:
+            # If it's not within 5 minutes, don't send a notification.
+            self.notification_message = "Bus is not near your location yet."
+
+        self.save()  # Save the updated message
+
+    

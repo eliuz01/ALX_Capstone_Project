@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from .models import CustomUser, Bus,Smartcard, Driver, BusAttendanceLog
+from .models import CustomUser, Bus,Smartcard, Driver, BusAttendanceLog, Notification
 from .serializers import CustomUserSerializer, RegisterSerializer, LoginSerializer, ProfileUserSerializer, \
-BusSerializer, SmartcardSerializer, DriverSerializer, BusAttendanceLogSerializer
+BusSerializer, SmartcardSerializer, DriverSerializer, BusAttendanceLogSerializer, NotificationSerializer
 from rest_framework.response import Response
 from rest_framework import status,generics
 from rest_framework.authtoken.models import Token
@@ -93,6 +93,23 @@ class BusAttendanceLogRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestro
     queryset = BusAttendanceLog.objects.all()
     serializer_class = BusAttendanceLogSerializer
     permission_classes = [IsAdminUser]  
+
+class NotificationListCreateView(generics.ListCreateAPIView):
+    queryset = Notification.objects.all()
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAdminUser]  # Ensure only admin users can access this
+
+    def perform_create(self, serializer):
+        """Override perform_create to add any custom behavior, if needed."""
+        # You can add custom logic here, like adding additional fields to the Notification instance
+        serializer.save()
+
+# View to retrieve, update, or delete a specific notification by ID
+class NotificationRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Notification.objects.all()
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAdminUser]  # Ensure only admin users can access this
+    lookup_field = 'notification_id'  # The field to search by in the URL
 
 
     
