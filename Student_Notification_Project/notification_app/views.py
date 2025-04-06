@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from .models import CustomUser, Bus,Smartcard, Driver
+from .models import CustomUser, Bus,Smartcard, Driver, BusAttendanceLog
 from .serializers import CustomUserSerializer, RegisterSerializer, LoginSerializer, ProfileUserSerializer, \
-BusSerializer, SmartcardSerializer, DriverSerializer
+BusSerializer, SmartcardSerializer, DriverSerializer, BusAttendanceLogSerializer
 from rest_framework.response import Response
 from rest_framework import status,generics
 from rest_framework.authtoken.models import Token
@@ -81,6 +81,18 @@ class DriverRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Driver.objects.all()
     serializer_class = DriverSerializer
     permission_classes = [IsAdminUser]
+
+# View to list and create bus attendance logs
+class BusAttendanceLogListCreateView(generics.ListCreateAPIView):
+    queryset = BusAttendanceLog.objects.all()
+    serializer_class = BusAttendanceLogSerializer
+    permission_classes = [IsAdminUser] 
+
+# View to retrieve, update, or delete a bus attendance log by ID
+class BusAttendanceLogRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = BusAttendanceLog.objects.all()
+    serializer_class = BusAttendanceLogSerializer
+    permission_classes = [IsAdminUser]  
 
 
     
